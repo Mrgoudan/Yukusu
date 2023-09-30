@@ -1,2 +1,4 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+“gator-3.2/SootAndroid/lib/stanford-corenlp-3.7.0-models.jar” filter=lfs diff=lfs merge=lfs -text
+gator-3.2/SootAndroid/lib/stanford-corenlp-3.7.0-models.jar filter=lfs diff=lfs merge=lfs -text

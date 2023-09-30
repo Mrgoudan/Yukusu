@@ -1,0 +1,85 @@
+/*
+ * Copyright (C) 2014 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+apply plugin: 'com.android.library'
+
+sourceCompatibility = JavaVersion.VERSION_1_5
+targetCompatibility = JavaVersion.VERSION_1_5
+
+version = espressoVersion
+group = 'com.android.support.test.espresso'
+
+android {
+
+    lintOptions {
+        abortOnError false
+    }
+
+    packagingOptions {
+        exclude 'LICENSE.txt'
+    }
+
+    // Required due to a conflict due to easy and jmock required for doclava
+    packagingOptions {
+        exclude 'META-INF/INDEX.LIST'
+    }
+}
+
+// create separate scope for jarjar
+configurations {
+    jarjar
+}
+
+dependencies {
+    // set to provided since we're manually adding the JarJar'd version
+    provided files('../libs/dagger-2.1-20150513.195741-5.jar')
+    provided files('../libs/guava-18.0.jar')
+    // TODO: the following 2 dagger deps are required at compile time only
+    // and should be taken from maven repo once dagger 2.1 is release
+    provided files('../libs/dagger-compiler-2.1-20150513.195817-5.jar')
+    provided files('../libs/dagger-producers-2.1-20150513.195750-5.jar')
+    compile 'com.android.volley:volley:1.0.0'
+    //need to add jcenter() to repositories in subprojects of the top build.gradle
+    compile project(':espresso-idling-resource')
+    compile project(':runner')
+    compile project(':rules')
+    compile 'javax.annotation:javax.annotation-api:1.2'
+    compile 'javax.inject:javax.inject:1'
+    compile 'com.google.code.findbugs:jsr305:2.0.1'
+    compile 'org.hamcrest:hamcrest-library:1.3'
+    compile 'org.hamcrest:hamcrest-integration:1.3'
+    compile 'com.squareup:javawriter:2.1.1'
+    jarjar files('../libs/jarjar-1.4.jar')
+    // Required only for Javadoc generation
+    provided 'org.easymock:easymock:2.4'
+    provided files('../libs/jmock-1.1.0.jar')
+    // TODO add to prebuilts
+    //necessary to create keywords from text
+    compile files('../libs/commons-lang3-3.6.jar')
+    //necessary for drawer analysis
+    compile 'com.android.support:support-v4:'+supportLibVersion
+    //necessary to find scroll
+    compile 'com.android.support:appcompat-v7:'+supportLibVersion
+    compile 'com.android.support:recyclerview-v7:'+supportLibVersion
+
+}
+
+// Run JarJar to hide Dagger and Guava deps
+ext.jarjarDeps = ["../libs/guava-18.0.jar", "../libs/dagger-2.1-20150513.195741-5.jar"] as Set
+ext.jarjarRulesFile = file('jarjar-rules.txt')
+apply from: "../../jarjar.gradle" // TODO run this through pro-guard first!
+
+apply from: "../../publish.gradle"

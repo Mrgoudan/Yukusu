@@ -1,0 +1,67 @@
+/*
+ * Copyright (C) 2014 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+include(':espresso-contrib')
+project(':espresso-contrib').projectDir = new File(rootDir, 'frameworks/testing/espresso/contrib')
+include(':espresso-contrib-tests')
+project(':espresso-contrib-tests').projectDir = new File(rootDir, 'frameworks/testing/espresso/contrib-tests')
+include(':espresso-core')
+project(':espresso-core').projectDir = new File(rootDir, 'frameworks/testing/espresso/core')
+include(':espresso-core-tests')
+project(':espresso-core-tests').projectDir = new File(rootDir, 'frameworks/testing/espresso/core-tests')
+include(':espresso-sample')
+project(':espresso-sample').projectDir = new File(rootDir, 'frameworks/testing/espresso/sample')
+include(':espresso-idling-resource')
+project(':espresso-idling-resource').projectDir = new File(rootDir, 'frameworks/testing/espresso/idling-resource')
+
+include(':espresso-web')
+project(':espresso-web').projectDir = new File(rootDir, 'frameworks/testing/espresso/web')
+include(':espresso-web-tests')
+project(':espresso-web-tests').projectDir = new File(rootDir, 'frameworks/testing/espresso/web-tests')
+
+include(':espresso-intents')
+project(':espresso-intents').projectDir = new File(rootDir, 'frameworks/testing/espresso/intents')
+include(':espresso-intents-tests')
+project(':espresso-intents-tests').projectDir = new File(rootDir, 'frameworks/testing/espresso/intents-tests')
+
+include(':runner')
+project(':runner').projectDir = new File(rootDir, 'frameworks/testing/runner')
+include(':rules')
+project(':rules').projectDir = new File(rootDir, 'frameworks/testing/rules')
+
+include(':uiautomator-v18')
+project(':uiautomator-v18').projectDir = new File(rootDir, 'frameworks/uiautomator')
+
+include(':uiautomator-testapp')
+project(':uiautomator-testapp').projectDir = new File(rootDir, 'frameworks/uiautomator/tests')
+
+include(':janktesthelper-v23')
+project(':janktesthelper-v23').projectDir = new File(rootDir, 'frameworks/janktesthelper')
+
+// For internal use only, please do not depend on any of these artifacts directly!
+include(':exposed-instrumentation-api-provided')
+project(':exposed-instrumentation-api-provided').projectDir = new File(rootDir, 'frameworks/testing/exposed-instrumentation-api-provided')
+include(':exposed-instrumentation-api-publish')
+project(':exposed-instrumentation-api-publish').projectDir = new File(rootDir, 'frameworks/testing/exposed-instrumentation-api-publish')
+
+// External
+include(':doclava')
+project(':doclava').projectDir = new File(rootDir, 'external/doclava')
+
+// Required for Doclava dep
+include(':tagsoup')
+project(':tagsoup').projectDir = new File(rootDir, 'external/tagsoup')
+

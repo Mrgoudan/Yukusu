@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="lib" path="lib/guava-14.0.1.jar" sourcepath="guava-14.0.1-sources.jar"/>
+	<classpathentry kind="lib" path="deps/android-17-stubs.jar"/>
+	<classpathentry kind="lib" path="lib/velocity-1.7-dep.jar"/>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="lib/junit-4.12.jar"/>
+	<classpathentry kind="lib" path="lib/neo4j-java-driver-1.2.1.jar" sourcepath="neo4j-java-driver-1.2.1-sources.jar"/>
+	<classpathentry kind="lib" path="lib/apkReSign_1.2.0.jar"/>
+	<classpathentry kind="lib" path="lib/gson-2.3.1.jar"/>
+	<classpathentry kind="lib" path="lib/json-20170516.jar"/>
+	<classpathentry kind="lib" path="lib/commons-lang3-3.6.jar" sourcepath="lib/commons-lang3-3.6-sources.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="jar:platform:/resource/SootAndroid/lib/commons-lang3-3.6-javadoc.jar!/"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib/ejml-0.23.jar"/>
+	<classpathentry kind="lib" path="lib/javax.json.jar"/>
+	<classpathentry kind="lib" path="lib/joda-time.jar"/>
+	<classpathentry kind="lib" path="lib/jollyday.jar"/>
+	<classpathentry kind="lib" path="lib/protobuf.jar"/>
+	<classpathentry kind="lib" path="lib/slf4j-simple.jar"/>
+	<classpathentry kind="lib" path="lib/stanford-corenlp-3.7.0-models.jar"/>
+	<classpathentry kind="lib" path="lib/stanford-corenlp-3.7.0.jar"/>
+	<classpathentry kind="lib" path="lib/xom.jar"/>
+	<classpathentry kind="lib" path="lib/sootclasses.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>

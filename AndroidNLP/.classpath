@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8"/>
+	<classpathentry kind="lib" path="libs/ejml-0.23.jar"/>
+	<classpathentry kind="lib" path="libs/javax.json.jar"/>
+	<classpathentry kind="lib" path="libs/joda-time.jar"/>
+	<classpathentry kind="lib" path="libs/jollyday.jar"/>
+	<classpathentry kind="lib" path="libs/protobuf.jar"/>
+	<classpathentry kind="lib" path="libs/slf4j-simple.jar"/>
+	<classpathentry kind="lib" path="libs/stanford-corenlp-3.7.0.jar" sourcepath="libs/stanford-corenlp-3.7.0-sources.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="jar:platform:/resource/AndroidNLP/libs/stanford-corenlp-3.7.0-javadoc.jar!/"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="libs/xom.jar"/>
+	<classpathentry kind="lib" path="libs/stanford-corenlp-3.7.0-models.jar"/>
+	<classpathentry kind="lib" path="libs/json-20170516.jar"/>
+	<classpathentry kind="lib" path="libs/javapoet-1.8.0.jar"/>
+	<classpathentry kind="lib" path="libs/httpclient-4.5.4.jar"/>
+	<classpathentry kind="lib" path="libs/httpcore-4.4.7.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>

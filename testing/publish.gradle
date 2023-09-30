@@ -1,0 +1,177 @@
+/*
+ * Copyright (C) 2014 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+configurations {
+    doclava
+}
+
+dependencies {
+    doclava project(':doclava')
+}
+
+void addJavadocTasks(Project project, Task topTask, String variantName, JavaCompile javaCompile) {
+    Task genJavadoc = project.tasks.findByName("generate${variantName.capitalize()}Javadoc")
+    Task packJavadoc = project.tasks.findByName("package${variantName.capitalize()}Javadoc")
+
+    if (!genJavadoc) {
+        genJavadoc = project.task("generate${variantName.capitalize()}Javadoc", type: Javadoc,
+                dependsOn: project.configurations.doclava) {
+            title = null
+            description "Generates Javadoc for $variantName."
+            source = javaCompile.source
+            classpath = files(javaCompile.classpath.files) + getAndroidPrebuilt(android.compileSdkVersion)
+            destinationDir = file("${project.docsDir}/$variantName/javadoc")
+            options.encoding = "UTF-8"
+            options.doclet = "com.google.doclava.Doclava"
+            options.bootClasspath = files(android.getBootClasspath()).asType(List)
+            options.docletpath = configurations.doclava.files.asType(List)
+            options.addStringOption("templatedir", "${rootDir}/build/tools/droiddoc/templates-sdk")
+            exclude '**/BuildConfig.java'
+            exclude '**/R.java'
+        }
+    }
+    genJavadoc.dependsOn topTask
+
+    if (!packJavadoc) {
+        packJavadoc = project.task("package${variantName.capitalize()}Javadoc", type: Jar) {
+            classifier = "javadoc"
+            from tasks["generate${variantName.capitalize()}Javadoc"].destinationDir
+            destinationDir = file("${project.docsDir}/${variantName}")
+        }
+    }
+    packJavadoc.dependsOn genJavadoc
+}
+
+// wait for all plugins to be installed
+afterEvaluate {
+
+    if (!project.android.hasProperty("isLibrary")) {
+        logger.warn("${project.name}: To enable source jars and javadoc, please define project.android.isLibrary")
+        return
+    }
+
+    if (project.android.isLibrary) {
+
+        // Find the release variant
+        def releaseVariant = android.libraryVariants.find { it.name == 'release' }
+        def buildConfig = fileTree(releaseVariant.getGenerateBuildConfig().sourceOutputDir)
+
+        // Add the source and classpath files for the release variant to the global javadoc task
+        rootProject.createJavadocs.source(releaseVariant.javaCompile.source.minus(buildConfig))
+        rootProject.createJavadocs.classpath = rootProject.createJavadocs.classpath +
+                files(releaseVariant.javaCompile.classpath) + getAndroidPrebuilt(android.compileSdkVersion)
+        rootProject.createJavadocs.options.bootClasspath = files(android.bootClasspath).asType(List)
+
+        android.libraryVariants.all { variant ->
+
+            addJavadocTasks(project, variant.assemble, variant.name, variant.javaCompile)
+
+
+            Task copyLibBinaries =
+                    project.tasks.create(name: "copy${variant.name.capitalize()}Binaries", type: Copy, dependsOn: variant.assemble) {
+                        if (project.hasProperty("buildFromServer") && rootProject.getProjectsToArchive().contains(project)) {
+                            description "Copies the release Jar to $project.distDir"
+                            def classesJarLocation = packageReleaseJar.archivePath
+                            if (project.getName() == 'espresso-core' && variant.hasProperty("pathToFinalOutputJarDir")) {
+                                // Workaround to pick up the final classes.jar that includes jarjar'd libs
+                                classesJarLocation = "$variant.pathToFinalOutputJarDir/classes.jar"
+                            }
+                            from classesJarLocation
+                            into project.distDir
+                            rename(packageReleaseJar.archiveName, "${project.name}-${project.version}-${variant.name}-no-dep.jar")
+                        }
+                    }
+
+            Task uberJarTask =
+                    project.tasks.create(name: "create${variant.name.capitalize()}JarWithDeps", type: Jar) {
+                        classifier = "${variant.name}"
+                        destinationDir = project.distDir
+                        exclude('META-INF/*.RSA', 'META-INF/*.SF', 'META-INF/*.DSA', 'LICENSE.txt')
+                    }
+
+            Task collectClassPaths =
+                    project.tasks.create(name: "collect${variant.name.capitalize()}ClassPaths", dependsOn: variant.assemble) << {
+                        if (project.getName() == 'espresso-core' && variant.hasProperty("pathToFinalOutputJarDir")) {
+                            // Workaround to pick up the final classes.jar that includes jarjar'd libs
+                            uberJarTask.from(zipTree("$variant.pathToFinalOutputJarDir/classes.jar"))
+                        } else {
+                            uberJarTask.from(variant.javaCompile.destinationDir)
+                        }
+
+                        // Add all dependencies except for android.jar to the fat jar
+                        variant.variantData.variantDependency.packageConfiguration.collect { dep ->
+                            if (dep.isDirectory() && !zipTree(dep).isEmpty()) {
+                                uberJarTask.from(dep)
+                            } else if (dep.getName().endsWith(".jar") &&
+                                    dep.getName() != 'android.jar') {
+                                uberJarTask.from(zipTree(dep))
+                            } else if (dep.getName().endsWith(".aar")) {
+                                zipTree(dep).find {
+                                    if (it.getName() == 'classes.jar') {
+                                        uberJarTask.from(zipTree(it))
+                                        return true;
+                                    }
+                                }
+                            }
+                        }
+                    }
+            uberJarTask.dependsOn collectClassPaths
+
+            // Use mainUpload anchor task to copy binaries to project.distDir
+            if (project.hasProperty("buildFromServer") &&
+                    project.buildFromServer == "true" &&
+                    variant.buildType.name == 'release') {
+                rootProject.mainUpload.dependsOn copyLibBinaries
+                // Skip if the project does not have any dependencies
+                if (rootProject.getProjectsToArchive().contains(project) &&
+                        variant.variantData.variantDependency.packageConfiguration.getAllDependencies().size() > 0) {
+                    rootProject.mainUpload.dependsOn uberJarTask
+                }
+            }
+        }
+    } else {
+        android.applicationVariants.all { variant ->
+
+            addJavadocTasks(project, variant.assemble, variant.name, variant.javaCompile)
+
+            Task copyApkBinaries =
+                project.tasks.create(name: "copy${variant.name.capitalize()}Binaries", type: Copy, dependsOn: variant.assemble) {
+                if (project.hasProperty("buildFromServer") && rootProject.getProjectsToArchive().contains(project)) {
+                    description "Copies the release Apk to $project.distDir"
+                    from variant.outputs[0].outputFile
+                    into project.distDir
+                    rename(variant.outputs[0].outputFile.name, "${project.name}-${project.version}-${variant.name}.apk")
+                }
+            }
+
+            // Use mainUpload anchor task to copy binaries to project.distDir
+            if (project.hasProperty("buildFromServer") &&
+            project.buildFromServer == "true") {
+                rootProject.mainUpload.dependsOn copyApkBinaries
+            }
+        }
+    }
+
+    task createSourcesJar(type: Jar) {
+        classifier = 'sources'
+        from 'src/main/java' // not sure why android.sourceSets.main.java doesnt work anymore
+    }
+
+    artifacts {
+        archives createSourcesJar
+        archives packageReleaseJavadoc
+    }
+}
